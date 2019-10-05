@@ -82,12 +82,7 @@ namespace Alice.Discord.Modules
             for (int i = 0; i < t.Length; i++)
             {
                 h = h += t[i].name.Replace("_","\\_")+$" ({t[i].post_count})"+"\n";
-                if (i > 5)
-                {
-                    //this is a comment, it shouldnt do anything but for some reason without it the
-                    //program wont run
-                    continue;
-                }
+                if (i > 5) continue;
             }
             EmbedBuilder b = new EmbedBuilder();
             b.WithDescription(h);
