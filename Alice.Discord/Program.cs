@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,7 +58,7 @@ namespace Alice.Discord
             //if bot receives a message
             _client.MessageReceived += _client_MessageReceived;
             _client.ReactionAdded += _client_ReactionAdded1;
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
         }
         private void _client_SwitchHentaiPage(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
