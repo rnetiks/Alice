@@ -51,7 +51,7 @@ namespace Alice.Discord
             var f = Modules.BotUtility.interactiveMessages;
             for (int i = 0; i < f.Count; i++)
             {
-                if (f[i].RequestAuthor == reactions.UserId && f[i].id == arg1.id;)
+                if (f[i].RequestAuthor == reactions.UserId && f[i].id == message.Id)
                 {
                     f[i].currentPage = f[i].currentPage+=1;
                     if (f[i].currentPage <= f[i].ImageCount)
@@ -60,10 +60,8 @@ namespace Alice.Discord
                         var c = (c1 as IMessageChannel);
                         var m = c.GetMessageAsync(message.Id);
                         EmbedBuilder eb = new EmbedBuilder();
-                        Console.WriteLine(($"{f[i].path}/{f[i].currentPage}.jpg"));
                         eb.WithImageUrl(($"{f[i].path}/{f[i].currentPage}.jpg"));
                         await ((IUserMessage) m.Result).ModifyAsync(msg => msg.Embed = eb.Build());
-                        //(channel as IMessageChannel).SendMessageAsync(f[i].path+"/" + f[i].currentPage + ".jpg");
                     }
                 }
             }

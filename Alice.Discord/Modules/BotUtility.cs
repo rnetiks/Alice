@@ -85,7 +85,7 @@ namespace Alice.Discord.Modules
                 if (i > 5) continue;
             }
             EmbedBuilder b = new EmbedBuilder();
-            b.WithDescription(h);
+            b.Description = h;
             Console.WriteLine(t[0].name);
             await Context.Channel.SendMessageAsync(string.Empty, false, b.Build());
         }
