@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using System.Threading.Tasks;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
-using DiscordBot.Modules;
-using System.Threading;
-namespace DiscordBot
+
+namespace Alice.Discord
 {
     class Program
     {

@@ -1,20 +1,12 @@
-﻿using Discord.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Net.Http;
-using System.Threading.Tasks;
-using AliceIMGLibrary = NReco.ImageGenerator;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Xml;
-using Newtonsoft.Json;
 using System.Net;
-using System.IO;
-using Discord;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
 
-namespace DiscordBot.Modules
+namespace Alice.Discord.Modules
 {
     public class BotUtility : ModuleBase<SocketCommandContext>
     {
@@ -42,7 +34,7 @@ namespace DiscordBot.Modules
             Console.WriteLine(m.Groups[1].ToString());
             embedBuilder.WithImageUrl("https:" + m.Groups[1].ToString());
             embedBuilder.WithTitle(m.Groups[2].ToString().Replace("&#39;", "'"));
-            embedBuilder.WithColor(Discord.Color.Blue);
+            embedBuilder.WithColor(global::Discord.Color.Blue);
             string lengthImageString = m.Groups[3].Value;
             regex = new Regex("<div.*?>(.*?)</div>");
             MatchCollection v = regex.Matches(lengthImageString);
@@ -166,14 +158,14 @@ namespace DiscordBot.Modules
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.AddField("Artist:", db_Image[0].tag_string_artist.Replace("_","\\_"));
                 eb.AddField("Tags:", db_Image[0].tag_string.Replace("_", "\\_"));
-                eb.WithColor(Discord.Color.Blue);
+                eb.WithColor(global::Discord.Color.Blue);
                 eb.WithImageUrl(db_Image[0].file_url);
                 await Context.Channel.SendMessageAsync(string.Empty, false, eb.Build());
             }
             catch (Exception e)
             {
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.WithColor(Discord.Color.Red);
+                eb.WithColor(global::Discord.Color.Red);
                 eb.AddField("Error:", "Was not able to Send the File");
                 await Context.Channel.SendMessageAsync(string.Empty, false, eb.Build());
                 Console.WriteLine(e.Message);
