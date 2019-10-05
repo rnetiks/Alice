@@ -51,7 +51,7 @@ namespace Alice.Discord
             var f = Modules.BotUtility.interactiveMessages;
             for (int i = 0; i < f.Count; i++)
             {
-                if (f[i].RequestAuthor == reactions.UserId)
+                if (f[i].RequestAuthor == reactions.UserId && f[i].id == arg1.id;)
                 {
                     f[i].currentPage = f[i].currentPage+=1;
                     if (f[i].currentPage <= f[i].ImageCount)
@@ -77,25 +77,6 @@ namespace Alice.Discord
             await OnHentaiSwitchPage(arg1, arg2, arg3);
         }
 
-        public static string[] cur = new string[]
-        {
-            "Fuck you",
-            "Shut up",
-            "Die already",
-            "I will kill you while u sleep",
-            "Justin Bieber sucks, but you suck just as much Dick",
-            "... Die",
-            "Kill Yourself",
-            "My hate for you is Eternal",
-            "OH SHUT UP ALREADY",
-            "You know... there is this easy trick... take a Toaster... inside a Bath... TO FUCKING KILL YOURSELF",
-            "Death is the only Answer for you",
-            "May i suggest, that you should suck less Dicks?",
-            "Fucking Gaylord",
-            "I am no longer Proud...\n/kill"
-        };
-        
-
         private async Task OnMessageReceived(SocketMessage arg)
         {
             var message = arg as SocketUserMessage;
@@ -103,11 +84,6 @@ namespace Alice.Discord
             {
                 return;
             }
-            
-#if false
-            await message.Channel.SendMessageAsync(cur[Program.Random.Next(cur.Length)]);
-            return;
-#endif
 
             if (message.Content == "p!catch alice")
             {
