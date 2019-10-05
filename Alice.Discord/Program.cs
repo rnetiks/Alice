@@ -11,13 +11,24 @@ namespace Alice.Discord
 {
     class Program
     {
-        static void Main(string[] args) => new Program().RunBotAsync().GetAwaiter().GetResult();
+        public static async Task Main(string[] args)
+        {
+            if (args.Length < 1)
+            {
+                Console.Error.WriteLine("Please supply your authentication token as argument.");
+                return;
+            }
+
+            var program = new Program();
+            await program.RunBotAsync(args[0]);
+            await Task.Delay(-1);
+        }
 
         private DiscordSocketClient _client;
         private CommandService _commands;
         private IServiceProvider _services;
-		public const string Login = "";
-        public async Task RunBotAsync()
+        
+        public async Task RunBotAsync(string token)
         {
             for (int i = 0; i < 666; i++)
             {
@@ -34,12 +45,11 @@ namespace Alice.Discord
             _client.Log += _client_Log;
             await RegisterCommandAsync();
 
-            await _client.LoginAsync(TokenType.Bot, Login);
+            await _client.LoginAsync(TokenType.Bot, token);
 
             await _client.StartAsync();
 
             await _client.SetGameAsync("Devoloper Build");
-            await Task.Delay(-1);
         }
 
         private Task _client_Log(LogMessage arg)
