@@ -58,10 +58,6 @@ namespace Alice.Discord.Modules
                 path = "https:"+match.Groups[1].ToString().Substring(0, hhh.LastIndexOf('/')),
                 RequestAuthor = Context.User.Id
             });
-            for (int i = 0; i < interactiveMessages.Count; i++)
-            {
-                Console.WriteLine(interactiveMessages[i]);
-            }
         }
         
         [Command("hentairdm")]
