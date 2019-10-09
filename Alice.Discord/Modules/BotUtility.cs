@@ -81,8 +81,7 @@ namespace Alice.Discord.Modules
                 if (i > 5) continue;
             }
             EmbedBuilder b = new EmbedBuilder();
-            b.Description = h;
-            Console.WriteLine(t[0].name);
+            b.Description = h;    
             await Context.Channel.SendMessageAsync(string.Empty, false, b.Build());
         }
         
@@ -107,18 +106,11 @@ namespace Alice.Discord.Modules
             }
         }
         
-        [Command("8ball")]
-        public async Task ball8([Remainder] string s)
-        {
-            string[] h = { "Yes", "No", "Maybe", "I dont know", "Possibly", "I highly doubt it", "Definetely", "Most likely" };
-            await Context.Channel.SendMessageAsync(h[Program.Random.Next(h.Length)]);
-        }
-        
-		[Command("pat")]
-		public async Task pat(string s)
+	[Command("pat")]
+	public async Task pat(string s)
         {
 			await Context.Channel.SendMessageAsync($"Patted {s}");
-		}
+        }
         
         [Command("tagban")]
         public async Task banTag(string tag)
