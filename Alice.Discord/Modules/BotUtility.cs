@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Timers;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
@@ -11,31 +15,32 @@ namespace Alice.Discord.Modules
 {
     public class BotUtility : ModuleBase<SocketCommandContext>
     {
+        HttpClient GetHttpClient = new HttpClient();
+        const int HentaiFoxMaxID = 60000;
         public class HentaiContainer
         {
             public int ImageCount;
             public string Name;
-            public ulong id;
-            public int currentPage = 0;
-            public string path;
-            public ulong RequestAuthor;
+            public ulong id; //Int64 ID of the Message
+            public int currentPage = 0; //0: Cover, 1-2147483647: Pages
+            public string path; //Absolute Path to the Gallery
+            public ulong RequestAuthor; //Int64 ID of the User which has Requested the Gallery
         }
-        
         public static List<HentaiContainer> interactiveMessages = new List<HentaiContainer>();
         WebClient hentaiClient = new WebClient();
-        
+
         [Command("hentai")]
         private async Task CommandHentai(int id)
         {
             const string hentaifoxUrl = "https://hentaifox.com/gallery/{0}";
             const string coverRegex = @"cover.*?src=""(.*?)"".*?info.*?h1>(.*?)</h1.*?Pages: (\d+)";
-            
+
             string webpage = hentaiClient.DownloadString(string.Format(hentaifoxUrl, id));
-            
+
             var regex = new Regex(coverRegex, RegexOptions.Singleline);
             var match = regex.Match(webpage);
-            
-            
+
+
             var embed = new EmbedBuilder();
             embed.ImageUrl = "https:" + match.Groups[1];
             embed.Title = match.Groups[2].ToString().Replace("&#39;", "'");
@@ -43,9 +48,9 @@ namespace Alice.Discord.Modules
 
             int.TryParse(match.Groups[3].Value, out int pages);
             embed.AddField("Pages", pages);
-            
+
             var msg = await Context.Channel.SendMessageAsync(string.Empty, false, embed.Build());
-            
+
             var right = new Emoji("▶");
             await msg.AddReactionAsync(right);
             string hhh = match.Groups[1].ToString();
@@ -55,25 +60,21 @@ namespace Alice.Discord.Modules
                 currentPage = 0,
                 Name = match.Groups[2].ToString(),
                 ImageCount = pages,
-                path = "https:"+match.Groups[1].ToString().Substring(0, hhh.LastIndexOf('/')),
+                path = "https:" + match.Groups[1].ToString().Substring(0, hhh.LastIndexOf('/')),
                 RequestAuthor = Context.User.Id
             });
-            for (int i = 0; i < interactiveMessages.Count; i++)
-            {
-                Console.WriteLine(interactiveMessages[i]);
-            }
         }
-        
+
         [Command("hentairdm")]
-        public async Task d()
+        public async Task RandomHentai()
         {
             Random rdm = new Random();
-            await CommandHentai(rdm.Next(50000));
+            await CommandHentai(rdm.Next(HentaiFoxMaxID));
         }
-        
-        
-        [Command("dbtag")]
-        public async Task getTag(string searchString)
+
+
+        [Command("dbtag"), RequireNsfw()]
+        public async Task GetTag(string searchString)
         {
             WebClient wc = new WebClient();
             string json = wc.DownloadString($"https://danbooru.donmai.us/tags.json?search[name_matches]=*{searchString}*&search[order]=count");
@@ -81,63 +82,83 @@ namespace Alice.Discord.Modules
             string h = string.Empty;
             for (int i = 0; i < t.Length; i++)
             {
-                h = h += t[i].name.Replace("_","\\_")+$" ({t[i].post_count})"+"\n";
+                //Escapes Discord Italic Formatting
+                h = h += t[i].name.Replace("_", "\\_") + $" ({t[i].post_count})" + "\n";
                 if (i > 5) continue;
             }
             EmbedBuilder b = new EmbedBuilder();
             b.Description = h;
-            Console.WriteLine(t[0].name);
             await Context.Channel.SendMessageAsync(string.Empty, false, b.Build());
         }
-        
+
         public class tagSearch
         {
             public string name;
             public string post_count;
         }
-        
+
         [Command("tagunban")]
         public async Task unbanTag(string tag)
         {
-            if (Context.User.Id == 168407391317000192)
-            {
-                bannedTags.Remove(tag.ToLowerInvariant());
-                await Context.Channel.SendMessageAsync($"Unbanned Tag: [{tag}]");
+            //Change to Database check
+        }
 
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync("You are not an Administrator");
-            }
-        }
-        
-        [Command("8ball")]
-        public async Task ball8([Remainder] string s)
+        [Command("pat")]
+        public async Task pat(IUser s)
         {
-            string[] h = { "Yes", "No", "Maybe", "I dont know", "Possibly", "I highly doubt it", "Definetely", "Most likely" };
-            await Context.Channel.SendMessageAsync(h[Program.Random.Next(h.Length)]);
+            await Context.Channel.SendMessageAsync($"Patted {s.Mention}");
         }
-        
-		[Command("pat")]
-		public async Task pat(string s)
-        {
-			await Context.Channel.SendMessageAsync($"Patted {s}");
-		}
-        
-        [Command("tagban")]
+
+        [Command("tagban"), RequireUserPermission(GuildPermission.Administrator)]
         public async Task banTag(string tag)
         {
-            if (Context.User.Id == 168407391317000192)
-            {
-                bannedTags.Add(tag.ToLowerInvariant());
-                await Context.Channel.SendMessageAsync($"Banned Tag: [{tag}]");
-            }
-            else 
-            {
-                await Context.Channel.SendMessageAsync("You are not an Administrator");
-            }
+            //same as unbantag "hasBan:guild_id"
         }
-        
+
+        /// <summary>
+        /// Translates a text to a given Language
+        /// </summary>
+        /// <param name="lang">inputs like [en-jp] to translate from english to japanese</param>
+        /// <param name="text">the text that should get translated</param>
+        /// <returns></returns>
+        //[Command("translate")] /*Remove '//' once the method is finished*/
+        public async Task translateTo(string lang, string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                var id = await Context.Channel.SendMessageAsync("No text to convert");
+                Timer t = new Timer();
+                t.AutoReset = false;
+                t.Interval = 10000;
+                t.Start();
+                t.Elapsed += async delegate
+                {
+                    t.Stop();
+                    t.Dispose();
+                    await id.DeleteAsync();
+                };
+            }
+            if (string.IsNullOrEmpty(lang))
+            {
+                var id = await Context.Channel.SendMessageAsync("Missing Argument: [Language]");
+                Timer t = new Timer(10000);
+                t.AutoReset = false;
+                t.Start();
+                t.Elapsed += async delegate
+                {
+                    t.Stop();
+                    t.Dispose();
+                    await id.DeleteAsync();
+                };
+            }
+            const string googleApi = "";
+            var w = await GetHttpClient.GetAsync(googleApi);
+            string s = await w.Content.ReadAsStringAsync();
+
+            Regex ConvertContent = new Regex("", RegexOptions.Singleline);
+            await Context.Channel.SendMessageAsync(s);
+        }
+
         WebClient wc = new WebClient();
         static List<string> bannedTags = new List<string>();
         [Command("db")]
@@ -169,7 +190,7 @@ namespace Alice.Discord.Modules
             
             [JsonProperty("tag_string")]
             public string Tags;
-            
+
             [JsonProperty("tag_string_artist")]
             public string Artist;
         }
