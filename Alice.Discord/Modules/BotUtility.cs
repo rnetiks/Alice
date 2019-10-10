@@ -108,8 +108,9 @@ namespace Alice.Discord.Modules
         {
             await Context.Channel.SendMessageAsync($"Patted {s.Mention}");
         }
-
-        [Command("tagban"), RequireUserPermission(GuildPermission.Administrator)]
+        
+        
+        [Command("tagban")]
         public async Task banTag(string tag)
         {
             //same as unbantag "hasBan:guild_id"

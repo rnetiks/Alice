@@ -3,7 +3,8 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Alice.Discord</RootNamespace>
     <AssemblyName>Alice.Discord</AssemblyName>
-    <TargetFramework>net471</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   
   <ItemGroup>

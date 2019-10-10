@@ -22,7 +22,6 @@ namespace Alice.Discord
                 .AddSingleton<DiscordSocketClient>(_client)
                 .AddSingleton<CommandService>(_commands)
                 .BuildServiceProvider();
-
             
             await RegisterCommandAsync();
 
@@ -72,7 +71,10 @@ namespace Alice.Discord
         private async Task OnMessageReceived(SocketMessage arg)
         {
             var message = arg as SocketUserMessage;
-            if (message == null || message.Author.IsBot) return;
+            if (message == null || message.Author.IsBot)
+            {
+                return;
+            }
 
             int argPos = 0;
             if (message.HasStringPrefix("a!", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
