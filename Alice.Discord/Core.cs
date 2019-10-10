@@ -19,11 +19,10 @@ namespace Alice.Discord
             _client = new DiscordSocketClient();
             _commands = new CommandService();
             _services = new ServiceCollection()
-                .AddSingleton(_client)
-                .AddSingleton(_commands)
+                .AddSingleton<DiscordSocketClient>(_client)
+                .AddSingleton<CommandService>(_commands)
                 .BuildServiceProvider();
 
-            _client.Log += Log;
             
             await RegisterCommandAsync();
 
@@ -31,11 +30,6 @@ namespace Alice.Discord
             await _client.StartAsync();
 
             await _client.SetGameAsync("Devoloper Build");
-        }
-
-        private static async Task Log(LogMessage log)
-        {
-            Console.WriteLine(log.ToString());
         }
 
         private async Task RegisterCommandAsync()
@@ -78,24 +72,8 @@ namespace Alice.Discord
         private async Task OnMessageReceived(SocketMessage arg)
         {
             var message = arg as SocketUserMessage;
-            if (message == null || message.Author.IsBot)
-            {
-                return;
-            }
+            if (message == null || message.Author.IsBot) return;
 
-            if (message.Content == "p!catch alice")
-            {
-                await message.Channel.SendMessageAsync("Do not even try that... I will Bite you.");
-                return;
-            }
-
-            if (message.Content.IndexOf("alice", StringComparison.InvariantCultureIgnoreCase) >= 0)
-            {
-                await message.Channel.SendMessageAsync("no.");
-                return;
-            }
-
-            Console.WriteLine(message.Content);
             int argPos = 0;
             if (message.HasStringPrefix("a!", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
@@ -105,7 +83,7 @@ namespace Alice.Discord
 
                 if (!result.IsSuccess)
                 {
-                    Console.WriteLine(result.ErrorReason);
+                    //Console.WriteLine(result.ErrorReason);
                 }
             }
         }

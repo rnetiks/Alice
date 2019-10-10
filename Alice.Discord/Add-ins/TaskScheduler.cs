@@ -7,6 +7,7 @@ using System.Timers;
 
 namespace Alice.Discord.Add_ins
 {
+/// Seriously though? its 04:32 AM, and i havent slept for over 24 Hours... so i dont even know if this works correctly
     class TaskScheduler
     {
         public static long TimeLeft;
