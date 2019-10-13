@@ -30,7 +30,8 @@ namespace Alice.Discord.Modules
         public static List<HentaiContainer> interactiveMessages = new List<HentaiContainer>();
         WebClient hentaiClient = new WebClient();
 
-        [Command("hentai")]
+        
+        [Command("hentaifox")]
         private async Task CommandHentai(int id)
         {
             const string hentaifoxUrl = "https://hentaifox.com/gallery/{0}";
@@ -42,12 +43,14 @@ namespace Alice.Discord.Modules
             var match = regex.Match(webpage);
 
 
-            var embed = new EmbedBuilder();
-            embed.ImageUrl = "https:" + match.Groups[1];
-            embed.Title = match.Groups[2].ToString().Replace("&#39;", "'");
-            embed.Color = Color.Blue;
+            var embed = new EmbedBuilder
+            {
+                ImageUrl = "https:" + match.Groups[1],
+                Title = match.Groups[2].ToString().Replace("&#39;", "'"),
+                Color = Color.Blue
+            };
 
-            int.TryParse(match.Groups[3].Value, out int pages);
+            int.TryParse(match.Groups[3].Value, out var pages);
             embed.AddField("Pages", pages);
 
             var msg = await Context.Channel.SendMessageAsync(string.Empty, false, embed.Build());
@@ -78,12 +81,12 @@ namespace Alice.Discord.Modules
         {
             var webClient = new WebClient();
             var json = webClient.DownloadString($"https://danbooru.donmai.us/tags.json?search[name_matches]=*{searchString}*&search[order]=count");
-            var t = Newtonsoft.Json.JsonConvert.DeserializeObject<tagSearch[]>(json);
+            var t = Newtonsoft.Json.JsonConvert.DeserializeObject<TagSearch[]>(json);
             var h = string.Empty;
             for (var i = 0; i < t.Length; i++)
             {
                 //Escapes Discord Italic Formatting
-                h = h += t[i].name.Replace("_", "\\_") + $" ({t[i].post_count})" + "\n";
+                h = h += t[i].Name.Replace("_", "\\_") + $" ({t[i].PostCount})" + "\n";
                 if (i > 5) continue;
             }
 
@@ -91,10 +94,10 @@ namespace Alice.Discord.Modules
             await Context.Channel.SendMessageAsync(string.Empty, false, b.Build());
         }
 
-        public class tagSearch
+        public class TagSearch
         {
-            public string name;
-            public string post_count;
+            public string Name;
+            public string PostCount;
         }
         
         [Command("pat")]
@@ -110,14 +113,12 @@ namespace Alice.Discord.Modules
         /// <param name="text">the text that should get translated</param>
         /// <returns></returns>
         //[Command("translate")] /*Remove '//' once the method is finished*/
-        public async Task translateTo(string lang, string text)
+        public async Task TranslateTo(string lang, string text)
         {
             if (string.IsNullOrEmpty(text))
             {
                 var id = await Context.Channel.SendMessageAsync("No text to convert");
-                Timer t = new Timer();
-                t.AutoReset = false;
-                t.Interval = 10000;
+                var t = new Timer {AutoReset = false, Interval = 10000};
                 t.Start();
                 t.Elapsed += async delegate
                 {
@@ -129,8 +130,7 @@ namespace Alice.Discord.Modules
             if (string.IsNullOrEmpty(lang))
             {
                 var id = await Context.Channel.SendMessageAsync("Missing Argument: [Language]");
-                Timer t = new Timer(10000);
-                t.AutoReset = false;
+                var t = new Timer(10000) {AutoReset = false};
                 t.Start();
                 t.Elapsed += async delegate
                 {
@@ -141,9 +141,9 @@ namespace Alice.Discord.Modules
             }
             const string googleApi = "";
             var w = await GetHttpClient.GetAsync(googleApi);
-            string s = await w.Content.ReadAsStringAsync();
+            var s = await w.Content.ReadAsStringAsync();
 
-            Regex ConvertContent = new Regex("", RegexOptions.Singleline);
+            var convertContent = new Regex("", RegexOptions.Singleline);
             await Context.Channel.SendMessageAsync(s);
         }
 
@@ -151,7 +151,7 @@ namespace Alice.Discord.Modules
         static List<string> bannedTags = new List<string>();
         
         [Command("db")]
-        public async Task getImage(string tag)
+        public async Task GetImage(string tag)
         {
             if (bannedTags.Contains(tag.ToLowerInvariant()))
             {
@@ -163,9 +163,7 @@ namespace Alice.Discord.Modules
 
             var image = JsonConvert.DeserializeObject<List<DbImageGetClass>>(jsonString)[0];
 
-            var eb = new EmbedBuilder();
-            eb.Color = Color.Blue;
-            eb.ImageUrl = image.Url;
+            var eb = new EmbedBuilder {Color = Color.Blue, ImageUrl = image.Url};
             eb.AddField("Artist:", image.Artist.Replace("_", "\\_"));
             eb.AddField("Tags:", image.Tags.Replace("_", "\\_"));
             
