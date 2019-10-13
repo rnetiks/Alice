@@ -84,6 +84,23 @@ namespace Alice.Discord.Modules
             await Context.Channel.SendMessageAsync("Online.");
         }
 
+        [Command("lewdkitsune")]
+        public async Task getLewdKitsune()
+        {
+            const string nekolifeApi = "https://nekos.life/api/v2/img/lewdk";
+            var s = webClient.DownloadString(nekolifeApi);
+            NekosLife e = Newtonsoft.Json.JsonConvert.DeserializeObject<NekosLife>(s);
+            
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.Color = Color.Blue;
+            embedBuilder.ImageUrl = e.Image;
+            await Context.Channel.SendMessageAsync(null, false, embedBuilder.Build());
+        }
+        public class NekosLife
+        {
+            [JsonProperty("url")]
+            public string Image;
+        }
         [Command("neko")]
         public async Task getNeko()
         {
