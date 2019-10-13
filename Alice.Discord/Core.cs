@@ -14,7 +14,7 @@ namespace Alice.Discord
         private CommandService _commands;
         private IServiceProvider _services;
 
-        public async Task RunBotAsync(string token, string _game)
+        public async Task RunBotAsync(string token, string game)
         {
             _client = new DiscordSocketClient();
             _commands = new CommandService();
@@ -28,7 +28,7 @@ namespace Alice.Discord
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
-            await _client.SetGameAsync(_game);
+            await _client.SetGameAsync(game);
         }
 
         private async Task RegisterCommandAsync()
@@ -44,16 +44,16 @@ namespace Alice.Discord
             var f = Modules.BotUtility.interactiveMessages;
             for (int i = 0; i < f.Count; i++)
             {
-                if (f[i].RequestAuthor == reactions.UserId && f[i].id == message.Id)
+                if (f[i].RequestAuthor == reactions.UserId && f[i].Id == message.Id)
                 {
-                    f[i].currentPage = f[i].currentPage+=1;
-                    if (f[i].currentPage <= f[i].ImageCount)
+                    f[i].CurrentPage = f[i].CurrentPage+=1;
+                    if (f[i].CurrentPage <= f[i].ImageCount)
                     {
                         var c1 = _client.GetChannel(channel.Id);
                         var c = (c1 as IMessageChannel);
                         var m = c.GetMessageAsync(message.Id);
                         EmbedBuilder eb = new EmbedBuilder();
-                        eb.WithImageUrl(($"{f[i].path}/{f[i].currentPage}.jpg"));
+                        eb.WithImageUrl(($"{f[i].Path}/{f[i].CurrentPage}.jpg"));
                         await ((IUserMessage) m.Result).ModifyAsync(msg => msg.Embed = eb.Build());
                     }
                 }

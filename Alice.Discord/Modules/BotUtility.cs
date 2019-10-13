@@ -22,9 +22,9 @@ namespace Alice.Discord.Modules
         {
             public int ImageCount;
             public string Name;
-            public ulong id; //Int64 ID of the Message
-            public int currentPage = 0; //0: Cover, 1-2147483647: Pages
-            public string path; //Absolute Path to the Gallery
+            public ulong Id; //Int64 ID of the Message
+            public int CurrentPage = 0; //0: Cover, 1-2147483647: Pages
+            public string Path; //Absolute Path to the Gallery
             public ulong RequestAuthor; //Int64 ID of the User which has Requested the Gallery
         }
         public static List<HentaiContainer> interactiveMessages = new List<HentaiContainer>();
@@ -54,14 +54,14 @@ namespace Alice.Discord.Modules
 
             var right = new Emoji("▶");
             await msg.AddReactionAsync(right);
-            string hhh = match.Groups[1].ToString();
+            var hhh = match.Groups[1].ToString();
             interactiveMessages.Add(new HentaiContainer()
             {
-                id = msg.Id,
-                currentPage = 0,
+                Id = msg.Id,
+                CurrentPage = 0,
                 Name = match.Groups[2].ToString(),
                 ImageCount = pages,
-                path = "https:" + match.Groups[1].ToString().Substring(0, hhh.LastIndexOf('/')),
+                Path = "https:" + match.Groups[1].ToString().Substring(0, hhh.LastIndexOf('/')),
                 RequestAuthor = Context.User.Id
             });
         }
@@ -76,18 +76,18 @@ namespace Alice.Discord.Modules
         [Command("dbtag"), RequireNsfw()]
         public async Task GetTag(string searchString)
         {
-            WebClient wc = new WebClient();
-            string json = wc.DownloadString($"https://danbooru.donmai.us/tags.json?search[name_matches]=*{searchString}*&search[order]=count");
-            tagSearch[] t = Newtonsoft.Json.JsonConvert.DeserializeObject<tagSearch[]>(json);
-            string h = string.Empty;
-            for (int i = 0; i < t.Length; i++)
+            var webClient = new WebClient();
+            var json = webClient.DownloadString($"https://danbooru.donmai.us/tags.json?search[name_matches]=*{searchString}*&search[order]=count");
+            var t = Newtonsoft.Json.JsonConvert.DeserializeObject<tagSearch[]>(json);
+            var h = string.Empty;
+            for (var i = 0; i < t.Length; i++)
             {
                 //Escapes Discord Italic Formatting
                 h = h += t[i].name.Replace("_", "\\_") + $" ({t[i].post_count})" + "\n";
                 if (i > 5) continue;
             }
-            EmbedBuilder b = new EmbedBuilder();
-            b.Description = h;
+
+            var b = new EmbedBuilder {Description = h};
             await Context.Channel.SendMessageAsync(string.Empty, false, b.Build());
         }
 
@@ -162,6 +162,7 @@ namespace Alice.Discord.Modules
 
         WebClient wc = new WebClient();
         static List<string> bannedTags = new List<string>();
+        
         [Command("db")]
         public async Task getImage(string tag)
         {
@@ -171,9 +172,9 @@ namespace Alice.Discord.Modules
                 return;
             }
             
-            string jsonString = wc.DownloadString($"https://danbooru.donmai.us/posts.json?tags={tag}&limit=1&random=true");
+            var jsonString = wc.DownloadString($"https://danbooru.donmai.us/posts.json?tags={tag}&limit=1&random=true");
 
-            var image = JsonConvert.DeserializeObject<List<DBImageGetClass>>(jsonString)[0];
+            var image = JsonConvert.DeserializeObject<List<DbImageGetClass>>(jsonString)[0];
 
             var eb = new EmbedBuilder();
             eb.Color = Color.Blue;
@@ -184,7 +185,7 @@ namespace Alice.Discord.Modules
             await Context.Channel.SendMessageAsync(string.Empty, false, eb.Build());
         }
         
-        public class DBImageGetClass
+        public class DbImageGetClass
         {
             [JsonProperty("file_url")]
             public string Url;
