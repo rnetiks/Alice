@@ -14,7 +14,7 @@ namespace Alice.Discord
         private CommandService _commands;
         private IServiceProvider _services;
 
-        public async Task RunBotAsync(string token)
+        public async Task RunBotAsync(string token, string _game)
         {
             _client = new DiscordSocketClient();
             _commands = new CommandService();
@@ -28,7 +28,7 @@ namespace Alice.Discord
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
-            await _client.SetGameAsync("Devoloper Build");
+            await _client.SetGameAsync(_game);
         }
 
         private async Task RegisterCommandAsync()
@@ -85,7 +85,7 @@ namespace Alice.Discord
 
                 if (!result.IsSuccess)
                 {
-                    //Console.WriteLine(result.ErrorReason);
+                    //Console.WriteLine(result.ErrorReason); //Slight Performance Increase....
                 }
             }
         }

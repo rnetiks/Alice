@@ -15,8 +15,12 @@ namespace Alice.Discord
                 return;
             }
 
+            string game = args[1];
+            if (args[1] == string.Empty){
+                 game = "Development Build";
+            }
             var core = new Core();
-            await core.RunBotAsync(args[0]);
+            await core.RunBotAsync(args[0], game);
             await Task.Delay(-1);
         }
     }
