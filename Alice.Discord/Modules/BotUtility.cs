@@ -17,6 +17,7 @@ namespace Alice.Discord.Modules
     {
         HttpClient GetHttpClient = new HttpClient();
         const int HentaiFoxMaxID = 60000;
+        
         public class HentaiContainer
         {
             public int ImageCount;
@@ -68,8 +69,7 @@ namespace Alice.Discord.Modules
         [Command("hentairdm")]
         public async Task RandomHentai()
         {
-            Random rdm = new Random();
-            await CommandHentai(rdm.Next(HentaiFoxMaxID));
+            await CommandHentai(Program.Random.Next(HentaiFoxMaxID));
         }
 
 
