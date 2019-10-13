@@ -56,7 +56,10 @@ namespace Alice.Discord.Modules
             var msg = await Context.Channel.SendMessageAsync(string.Empty, false, embed.Build());
 
             var right = new Emoji("▶");
-            await msg.AddReactionAsync(right);
+            var cross = new Emoji("✖");
+            var check = new Emoji("✔");
+            IEmote[] emotes = {right};
+            await msg.AddReactionsAsync(emotes);
             var hhh = match.Groups[1].ToString();
             interactiveMessages.Add(new HentaiContainer()
             {
@@ -75,11 +78,49 @@ namespace Alice.Discord.Modules
             await CommandHentai(Program.Random.Next(HentaiFoxMaxID));
         }
 
+        [Command("test")]
+        public async Task getTestResul()
+        {
+            await Context.Channel.SendMessageAsync("Online.");
+        }
 
+        [Command("neko")]
+        public async Task getNeko()
+        {
+            const string nekoApi = "https://nekos.life/api/v2/img/erokemo";
+            var result = webClient.DownloadString(nekoApi);
+            var hb = Newtonsoft.Json.JsonConvert.DeserializeObject<NekoClass>(result);
+            var embedBuilder = new EmbedBuilder {Color = Color.Blue};
+            embedBuilder.WithImageUrl(hb.Image);
+            await Context.Channel.SendMessageAsync(null, false, embedBuilder.Build());
+        }
+        public class NekoClass
+        {
+            [JsonProperty("url")]
+            public string Image;
+        }
+        [Command("boobs")]
+        public async Task getBoobs()
+        {
+            const string boobApi = "http://api.oboobs.ru/boobs/0/1/random";
+            var result = webClient.DownloadString(boobApi);
+            Console.WriteLine(result);
+            var ob = Newtonsoft.Json.JsonConvert.DeserializeObject<BoobClass[]>(result);
+            var embed = new EmbedBuilder {Color = Color.Blue};
+            embed.WithImageUrl($"http://media.oboobs.ru/{ob[0].ImageURL}");
+            Console.WriteLine(ob[0].ImageURL);
+            await Context.Channel.SendMessageAsync(null, false, embed.Build());
+        }
+        public class BoobClass
+        {
+            [JsonProperty("preview")]
+            public string ImageURL;
+        }
+        public static WebClient webClient = new WebClient();
         [Command("dbtag"), RequireNsfw()]
         public async Task GetTag(string searchString)
         {
-            var webClient = new WebClient();
+            
             var json = webClient.DownloadString($"https://danbooru.donmai.us/tags.json?search[name_matches]=*{searchString}*&search[order]=count");
             var t = Newtonsoft.Json.JsonConvert.DeserializeObject<TagSearch[]>(json);
             var h = string.Empty;

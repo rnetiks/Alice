@@ -35,6 +35,7 @@ namespace Alice.Discord
         {
             _client.MessageReceived += OnMessageReceived;
             _client.ReactionAdded += OnReactionAdded;
+            _client.ReactionRemoved += OnReactionAdded;
 
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
         }
