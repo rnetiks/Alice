@@ -96,24 +96,11 @@ namespace Alice.Discord.Modules
             public string name;
             public string post_count;
         }
-
-        [Command("tagunban")]
-        public async Task unbanTag(string tag)
-        {
-            //Change to Database check
-        }
-
+        
         [Command("pat")]
-        public async Task pat(IUser s)
+        public async Task Pat(IUser s)
         {
             await Context.Channel.SendMessageAsync($"Patted {s.Mention}");
-        }
-        
-        
-        [Command("tagban")]
-        public async Task banTag(string tag)
-        {
-            //same as unbantag "hasBan:guild_id"
         }
 
         /// <summary>
