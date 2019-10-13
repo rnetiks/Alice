@@ -42,7 +42,7 @@ namespace Alice.Discord
         
         private async Task OnHentaiSwitchPage(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reactions)
         {
-            var f = Modules.BotUtility.interactiveMessages;
+            var f = Modules.BotUtility.InteractiveMessages;
             for (int i = 0; i < f.Count; i++)
             {
                 if (f[i].RequestAuthor == reactions.UserId && f[i].Id == message.Id)

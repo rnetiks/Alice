@@ -27,8 +27,7 @@ namespace Alice.Discord.Modules
             public string Path; //Absolute Path to the Gallery
             public ulong RequestAuthor; //Int64 ID of the User which has Requested the Gallery
         }
-        public static List<HentaiContainer> interactiveMessages = new List<HentaiContainer>();
-        WebClient hentaiClient = new WebClient();
+        public static List<HentaiContainer> InteractiveMessages = new List<HentaiContainer>();
 
         
         [Command("hentaifox")]
@@ -37,7 +36,7 @@ namespace Alice.Discord.Modules
             const string hentaifoxUrl = "https://hentaifox.com/gallery/{0}";
             const string coverRegex = @"cover.*?src=""(.*?)"".*?info.*?h1>(.*?)</h1.*?Pages: (\d+)";
 
-            var webpage = hentaiClient.DownloadString(string.Format(hentaifoxUrl, id));
+            var webpage = WebClient.DownloadString(string.Format(hentaifoxUrl, id));
 
             var regex = new Regex(coverRegex, RegexOptions.Singleline);
             var match = regex.Match(webpage);
@@ -61,7 +60,7 @@ namespace Alice.Discord.Modules
             IEmote[] emotes = {right};
             await msg.AddReactionsAsync(emotes);
             var hhh = match.Groups[1].ToString();
-            interactiveMessages.Add(new HentaiContainer()
+            InteractiveMessages.Add(new HentaiContainer()
             {
                 Id = msg.Id,
                 CurrentPage = 0,
@@ -88,12 +87,10 @@ namespace Alice.Discord.Modules
         public async Task getLewdKitsune()
         {
             const string nekolifeApi = "https://nekos.life/api/v2/img/lewdk";
-            var s = webClient.DownloadString(nekolifeApi);
-            NekosLife e = Newtonsoft.Json.JsonConvert.DeserializeObject<NekosLife>(s);
-            
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-            embedBuilder.Color = Color.Blue;
-            embedBuilder.ImageUrl = e.Image;
+            var s = WebClient.DownloadString(nekolifeApi);
+            var e = Newtonsoft.Json.JsonConvert.DeserializeObject<NekosLife>(s);
+
+            var embedBuilder = new EmbedBuilder {Color = Color.Blue, ImageUrl = e.Image};
             await Context.Channel.SendMessageAsync(null, false, embedBuilder.Build());
         }
         public class NekosLife
@@ -102,43 +99,39 @@ namespace Alice.Discord.Modules
             public string Image;
         }
         [Command("neko")]
-        public async Task getNeko()
+        public async Task GetNeko()
         {
             const string nekoApi = "https://nekos.life/api/v2/img/erokemo";
-            var result = webClient.DownloadString(nekoApi);
-            var hb = Newtonsoft.Json.JsonConvert.DeserializeObject<NekoClass>(result);
+            var result = WebClient.DownloadString(nekoApi);
+            var hb = Newtonsoft.Json.JsonConvert.DeserializeObject<NekosLife>(result);
             var embedBuilder = new EmbedBuilder {Color = Color.Blue};
             embedBuilder.WithImageUrl(hb.Image);
             await Context.Channel.SendMessageAsync(null, false, embedBuilder.Build());
         }
-        public class NekoClass
-        {
-            [JsonProperty("url")]
-            public string Image;
-        }
         [Command("boobs")]
-        public async Task getBoobs()
+        public async Task GetBoobs()
         {
             const string boobApi = "http://api.oboobs.ru/boobs/0/1/random";
-            var result = webClient.DownloadString(boobApi);
+            var result = WebClient.DownloadString(boobApi);
             Console.WriteLine(result);
             var ob = Newtonsoft.Json.JsonConvert.DeserializeObject<BoobClass[]>(result);
             var embed = new EmbedBuilder {Color = Color.Blue};
-            embed.WithImageUrl($"http://media.oboobs.ru/{ob[0].ImageURL}");
-            Console.WriteLine(ob[0].ImageURL);
+            embed.WithImageUrl($"http://media.oboobs.ru/{ob[0].ImageUrl}");
+            Console.WriteLine(ob[0].ImageUrl);
             await Context.Channel.SendMessageAsync(null, false, embed.Build());
         }
         public class BoobClass
         {
             [JsonProperty("preview")]
-            public string ImageURL;
+            public string ImageUrl;
         }
-        public static WebClient webClient = new WebClient();
+
+        WebClient WebClient = new WebClient();
         [Command("dbtag"), RequireNsfw()]
         public async Task GetTag(string searchString)
         {
             
-            var json = webClient.DownloadString($"https://danbooru.donmai.us/tags.json?search[name_matches]=*{searchString}*&search[order]=count");
+            var json = WebClient.DownloadString($"https://danbooru.donmai.us/tags.json?search[name_matches]=*{searchString}*&search[order]=count");
             var t = Newtonsoft.Json.JsonConvert.DeserializeObject<TagSearch[]>(json);
             var h = string.Empty;
             for (var i = 0; i < t.Length; i++)
@@ -204,8 +197,7 @@ namespace Alice.Discord.Modules
             var convertContent = new Regex("", RegexOptions.Singleline);
             await Context.Channel.SendMessageAsync(s);
         }
-
-        WebClient wc = new WebClient();
+        
         static List<string> bannedTags = new List<string>();
         
         [Command("db")]
@@ -217,7 +209,7 @@ namespace Alice.Discord.Modules
                 return;
             }
             
-            var jsonString = wc.DownloadString($"https://danbooru.donmai.us/posts.json?tags={tag}&limit=1&random=true");
+            var jsonString = WebClient.DownloadString($"https://danbooru.donmai.us/posts.json?tags={tag}&limit=1&random=true");
 
             var image = JsonConvert.DeserializeObject<List<DbImageGetClass>>(jsonString)[0];
 
@@ -241,4 +233,5 @@ namespace Alice.Discord.Modules
         }
 
     }
+
 }
