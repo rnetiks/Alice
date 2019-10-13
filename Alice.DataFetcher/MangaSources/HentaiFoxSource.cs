@@ -8,7 +8,7 @@ namespace Alice.DataFetcher.MangaSources
 {
     public class HentaiFoxSource : IMangaSource
     {
-        private const string GalleryUrl = "https://hentaifox.com/gallery/{0}";
+        public const string GalleryUrl = "https://hentaifox.com/gallery/{0}";
 
         public bool ValidUrl(string url)
         {
