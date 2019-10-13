@@ -37,7 +37,7 @@ namespace Alice.Discord.Modules
             const string hentaifoxUrl = "https://hentaifox.com/gallery/{0}";
             const string coverRegex = @"cover.*?src=""(.*?)"".*?info.*?h1>(.*?)</h1.*?Pages: (\d+)";
 
-            string webpage = hentaiClient.DownloadString(string.Format(hentaifoxUrl, id));
+            var webpage = hentaiClient.DownloadString(string.Format(hentaifoxUrl, id));
 
             var regex = new Regex(coverRegex, RegexOptions.Singleline);
             var match = regex.Match(webpage);
