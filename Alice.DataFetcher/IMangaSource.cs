@@ -2,6 +2,6 @@ namespace Alice.DataFetcher
 {
     public interface IMangaSource
     {
-        bool ValidUrl(string url);
+        bool IsValidUrl(string url);
     }
 }
