@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using Alice.DataFetcher;
 using Discord;
 using Discord.WebSocket;
 
@@ -13,37 +15,87 @@ namespace Alice.Discord
         private const string KillEmote = "\u274C";
         
         private readonly DiscordSocketClient _bot;
-        private readonly List<string> _pages;
+        private readonly MangaInfo _manga;
         private readonly List<ulong> _allowedUsers;
 
         private ulong _listeningMessage;
         private int _currentPage;
 
-        public MangaReader(DiscordSocketClient bot, List<string> pages, List<ulong> users)
+        public MangaReader(DiscordSocketClient bot, MangaInfo manga, List<ulong> users)
         {
             _bot = bot;
-            _pages = pages;
+            _manga = manga;
             _allowedUsers = users;
         }
         
-        public MangaReader(DiscordSocketClient bot, List<string> pages, params ulong[] users)
+        public MangaReader(DiscordSocketClient bot, MangaInfo manga, params ulong[] users)
         {
             if (users.Length == 0)
                 throw new ArgumentException("Please specify atleast one user", nameof(users));
             
             _bot = bot;
-            _pages = pages;
+            _manga = manga;
             _allowedUsers = new List<ulong>(users);
+        }
+
+        private static EmbedBuilder FromMangaInfo(MangaInfo manga)
+        {
+            var embed = new EmbedBuilder();
+
+            embed.Title = manga.Title;
+            
+            if (manga.Artists.Length >= 1)
+                embed.Author = new EmbedAuthorBuilder().WithName(manga.Artists[0]);
+
+            embed.Color = Color.Teal;
+
+            if (manga.Tags.Length > 0)
+            {
+                embed.Fields.Add(new EmbedFieldBuilder
+                {
+                    Name = "Tags",
+                    Value = string.Join(" ", manga.Tags)
+                });
+            }
+
+            if (manga.Categories.Length > 0)
+            {
+                embed.Fields.Add(new EmbedFieldBuilder
+                {
+                    Name = "Categories",
+                    Value = string.Join(" ", manga.Categories)
+                });
+            }
+
+            if (manga.Languages.Length > 0)
+            {
+                embed.Fields.Add(new EmbedFieldBuilder
+                {
+                    Name = "Languages",
+                    Value = string.Join(" ", manga.Languages)
+                });
+            }
+
+            return embed;
         }
 
         public async Task Create(ISocketMessageChannel channel, string mangaWebsite)
         {
-            var embed = new EmbedBuilder
+            var embed = FromMangaInfo(_manga);
+            if (_manga.Cover != null)
             {
-                ImageUrl = _pages[0]
-            }.Build();
-            
-            var msg = await channel.SendMessageAsync(null, false, embed);
+                embed.ImageUrl = _manga.Cover;
+                embed.Footer = new EmbedFooterBuilder().WithText("Cover");
+                _currentPage = -1;
+            }
+            else
+            {
+                embed.ImageUrl = _manga.Pages[0];
+                embed.Footer = new EmbedFooterBuilder().WithText($"1 / {_manga.PageCount}");
+                _currentPage = 0;
+            }
+
+            var msg = await channel.SendMessageAsync(null, false, embed.Build());
             
             await msg.AddReactionAsync(new Emoji(PreviousPageEmote));
             await msg.AddReactionAsync(new Emoji(NextPageEmote));
@@ -72,10 +124,11 @@ namespace Alice.Discord
         {
             await message.ModifyAsync(msg =>
             {
-                msg.Embed = new EmbedBuilder
-                {
-                    ImageUrl = _pages[page]
-                }.Build();
+                var embed = FromMangaInfo(_manga);
+                embed.ImageUrl = _manga.Pages[page];
+                embed.Footer = new EmbedFooterBuilder().WithText($"{page + 1} / {_manga.PageCount}");
+
+                msg.Embed = embed.Build();
             });
             
             _currentPage = page;
@@ -105,7 +158,7 @@ namespace Alice.Discord
             switch (reaction.Emote.Name)
             {
                 case NextPageEmote:
-                    if (_currentPage + 1 < _pages.Count)
+                    if (_currentPage + 1 < _manga.PageCount)
                     {
                         await SetPage(_currentPage + 1, msg);
                     }

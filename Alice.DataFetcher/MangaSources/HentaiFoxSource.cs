@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Alice.DataFetcher.MangaSources
 {
@@ -10,13 +12,13 @@ namespace Alice.DataFetcher.MangaSources
     {
         public const string GalleryUrl = "https://hentaifox.com/gallery/{0}";
 
-        public bool ValidUrl(string url)
+        public bool IsValidUrl(string url)
         {
-            const string validRegex = @"^(?:https?://)?hentaifox\.com/(?:gallery|g)/\d+.+$";
+            const string validRegex = @"^(?:https?://)?hentaifox\.com/(?:gallery|g)/\d+.*$";
             return Regex.IsMatch(url, validRegex, RegexOptions.IgnoreCase);
         }
 
-        public static async IAsyncEnumerable<string> GetPages(int id)
+        public static async Task<MangaInfo?> GetMangaAsync(int id)
         {
             var request = (HttpWebRequest) WebRequest.Create(string.Format(GalleryUrl, id));
             request.Method = "GET";
@@ -25,31 +27,113 @@ namespace Alice.DataFetcher.MangaSources
             using var response = (HttpWebResponse) await request.GetResponseAsync();
             await using var stream = response.GetResponseStream();
             if (stream == null)
-                yield break;
+                return null;
             
             using var reader = new StreamReader(stream);
+
+            var manga = new MangaInfo
+            {
+                Url = $"http://hentaifox.com/gallery/{id}",
+                IsNsfw = true
+            };
 
             string? imagesUrl = null;
             int? pages = null;
             
+            // Get base url for all the pages
             string line;
-            while ((line = await reader.ReadLineAsync()) != null && imagesUrl == null)
+            while (imagesUrl == null && (line = await reader.ReadLineAsync()) != null)
             {
-                var index = line.IndexOf("<div class=\"cover\">", StringComparison.InvariantCulture);
+                var index = line.IndexOf("<div class=\"cover\">", StringComparison.Ordinal);
                 if (index >= 0)
                 {
                     line = await reader.ReadLineAsync();
-                    const string imageUrl = @".+src=""\W*([a-z0-9-\.]+(?:\/\d+)+).*"".+";
-                    var match = Regex.Match(line, imageUrl, RegexOptions.IgnoreCase);
+                    const string imageRegex = @".+src=""\W*([a-z0-9-\.]+(?:\/\d+)+).*"".+";
+                    var match = Regex.Match(line, imageRegex, RegexOptions.IgnoreCase);
                     if (!match.Success)
-                        yield break;
+                        return null;
                     imagesUrl = "https://" + match.Groups[1].Value + "/{0}";
                 }
             }
-            
-            while ((line = await reader.ReadLineAsync()) != null && pages == null)
+
+            // Get Manga Name
+            while (manga.Title == null && (line = await reader.ReadLineAsync()) != null)
             {
-                int index = line.IndexOf("<span class=\"pages\">Pages: ", StringComparison.InvariantCulture);
+                var index = line.IndexOf("<h1>", StringComparison.Ordinal);
+                if (index >= 0)
+                    manga.Title = line.Substring(index + 4, line.Length - index - 4 - 5);
+            }
+            
+            // Get Tags
+            while (manga.Tags == null && (line = await reader.ReadLineAsync()) != null)
+            {
+                var index = line.IndexOf("Tags: ", StringComparison.Ordinal);
+                if (index >= 0)
+                {
+                    const string tagsRegex = @"tag"">([\w\s-_]+?)<\/span";
+                    var matches = Regex.Matches(line, tagsRegex, RegexOptions.IgnoreCase);
+
+                    manga.Tags = new string[matches.Count];
+                    for (int i = 0; i < matches.Count; i++)
+                    {
+                        manga.Tags[i] = matches[i].Groups[1].Value;
+                    }
+                }
+            }
+            
+            // Get Artists
+            while (manga.Artists == null && (line = await reader.ReadLineAsync()) != null)
+            {
+                var index = line.IndexOf("Artists: ", StringComparison.Ordinal);
+                if (index >= 0)
+                {
+                    const string artistsRegex = @"tag"">([\w\s-_]+?)<\/span";
+                    var matches = Regex.Matches(line, artistsRegex, RegexOptions.IgnoreCase);
+
+                    manga.Artists = new string[matches.Count];
+                    for (int i = 0; i < matches.Count; i++)
+                    {
+                        manga.Artists[i] = matches[i].Groups[1].Value;
+                    }
+                }
+            }
+            
+            // Get Languages
+            while (manga.Languages == null && (line = await reader.ReadLineAsync()) != null)
+            {
+                var index = line.IndexOf("Language: ", StringComparison.Ordinal);
+                if (index >= 0)
+                {
+                    const string languagesRegex = @"tag"">([\w\s-_]+?)<\/span";
+                    var matches = Regex.Matches(line, languagesRegex, RegexOptions.IgnoreCase);
+
+                    manga.Languages = new string[matches.Count];
+                    for (int i = 0; i < matches.Count; i++)
+                    {
+                        manga.Languages[i] = matches[i].Groups[1].Value;
+                    }
+                }
+            }
+            
+            // Get Category
+            while (manga.Categories == null && (line = await reader.ReadLineAsync()) != null)
+            {
+                var index = line.IndexOf("Category: ", StringComparison.Ordinal);
+                if (index >= 0)
+                {
+                    const string categoryRegex = @"tag"">([\w\s-_]+?)<\/span";
+                    var matches = Regex.Matches(line, categoryRegex, RegexOptions.IgnoreCase);
+
+                    manga.Categories = new string[matches.Count];
+                    for (int i = 0; i < matches.Count; i++)
+                        manga.Categories[i] = matches[i].Groups[1].Value;
+                }
+            }
+
+            // Get number of pages
+            while (pages == null && (line = await reader.ReadLineAsync()) != null)
+            {
+                int index = line.IndexOf("<span class=\"pages\">Pages: ", StringComparison.Ordinal);
                 if (index >= 0)
                 {
                     int max = index + 27;
@@ -59,17 +143,21 @@ namespace Alice.DataFetcher.MangaSources
 
                     int.TryParse(line.Substring(index + 27, max - index - 27), out int pageCount);
                     if (pageCount == 0)
-                        yield break;
+                        return null;
                     pages = pageCount;
                 }
             }
-
-            yield return string.Format(imagesUrl, "cover.jpg");
             
-            for (int i = 1; i <= pages; i++)
-            {
-                yield return string.Format(imagesUrl, i + ".jpg");
-            }
+            if (pages == null)
+                return null;
+            
+            manga.Cover = string.Format(imagesUrl, "cover.jpg");
+            
+            manga.Pages = new string[pages.Value];
+            for (int i = 0; i < pages; i++)
+                manga.Pages[i] = string.Format(imagesUrl, i + 1 + ".jpg");
+
+            return manga;
         }
     }
 }
