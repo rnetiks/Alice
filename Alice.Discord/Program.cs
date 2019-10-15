@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Alice.Discord
@@ -11,19 +9,18 @@ namespace Alice.Discord
         
         public static async Task Main(string[] args)
         {
-            if (!File.Exists("apiKEY"))
+            if (args.Length < 1)
             {
-                File.WriteAllText("apiKEY", "");
-            }
-            var apiKEY = File.ReadAllText("apiKEY");
-            if (apiKEY.Length <= 16)
-            {
-                Console.WriteLine("no API Key Found, please add one in the \"apiKEY\" File");
-                Console.ReadKey(true);
+                Console.Error.WriteLine("Please supply your authentication token as argument.");
                 return;
             }
+
+            var game = "Development Build";
+            if (args.Length >= 2 && game != string.Empty)
+                game = args[1];
+            
             var core = new Core();
-            await core.RunBotAsync(apiKEY, "DevBuild");
+            await core.RunBotAsync(args[0], game);
             await Task.Delay(-1);
         }
     }
