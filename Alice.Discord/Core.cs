@@ -13,7 +13,7 @@ namespace Alice.Discord
         private DiscordSocketClient _client;
         private CommandService _commands;
         private IServiceProvider _services;
-
+        
         public async Task RunBotAsync(string token, string game)
         {
             _client = new DiscordSocketClient();
