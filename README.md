@@ -24,4 +24,4 @@ Commands:
     
     
 As of the 17.11.19 this bot did not work anymore as changes were made which sadly didnt get a fix
-from my side... i might fix them once i have time again, Neko~
+from my side... i might fix them once i have time again, Neko~~
