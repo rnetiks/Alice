@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
@@ -34,49 +36,20 @@ namespace Alice.Discord
         private async Task RegisterCommandAsync()
         {
             _client.MessageReceived += OnMessageReceived;
-            _client.ReactionAdded += OnReactionAdded;
-            _client.ReactionRemoved += OnReactionAdded;
 
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
         }
-        
-        private async Task OnHentaiSwitchPage(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reactions)
-        {
-            var f = Modules.BotUtility.InteractiveMessages;
-            for (int i = 0; i < f.Count; i++)
-            {
-                if (f[i].RequestAuthor == reactions.UserId && f[i].Id == message.Id)
-                {
-                    f[i].CurrentPage = f[i].CurrentPage+=1;
-                    if (f[i].CurrentPage <= f[i].ImageCount)
-                    {
-                        var c1 = _client.GetChannel(channel.Id);
-                        var c = (c1 as IMessageChannel);
-                        var m = c.GetMessageAsync(message.Id);
-                        EmbedBuilder eb = new EmbedBuilder();
-                        eb.WithImageUrl(($"{f[i].Path}/{f[i].CurrentPage}.jpg"));
-                        await ((IUserMessage) m.Result).ModifyAsync(msg => msg.Embed = eb.Build());
-                    }
-                }
-            }
-        }
-        
-        private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
-        {
-            if (_client.GetUser(arg3.UserId).IsBot)
-                return;
-            
-            await OnHentaiSwitchPage(arg1, arg2, arg3);
-        }
+
+        public static bool Contains(string i, IEnumerable<string> c) => c.All(i.Contains);
 
         private async Task OnMessageReceived(SocketMessage arg)
         {
-            var message = arg as SocketUserMessage;
-            if (message == null || message.Author.IsBot)
+            if (!(arg is SocketUserMessage message) || message.Author.IsBot)
             {
                 return;
             }
 
+            Console.WriteLine($"{message.Author.Username}: {message.Content}");
             int argPos = 0;
             if (message.HasStringPrefix("a!", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
@@ -86,7 +59,7 @@ namespace Alice.Discord
 
                 if (!result.IsSuccess)
                 {
-                    //Console.WriteLine(result.ErrorReason); //Slight Performance Increase....
+                    Console.WriteLine(result.ErrorReason); //Slight Performance Increase....
                 }
             }
         }

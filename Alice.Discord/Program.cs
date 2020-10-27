@@ -7,20 +7,12 @@ namespace Alice.Discord
     {
         public static readonly Random Random = new Random();
         
-        public static async Task Main(string[] args)
-        {
-            if (args.Length < 1)
-            {
-                Console.Error.WriteLine("Please supply your authentication token as argument.");
-                return;
-            }
-
+        public static async Task Main(string[] args) {
+            Console.Write("Enter Id: ");
+            var id = "MjQ2ODIxMTg4ODIxNzEyODk3.WCZ8JQ.W7TtOAzvd9cCAKttJfQzbUkCy3U";//Console.ReadLine();
             var game = "Development Build";
-            if (args.Length >= 2 && game != string.Empty)
-                game = args[1];
-            
             var core = new Core();
-            await core.RunBotAsync(args[0], game);
+            await core.RunBotAsync(id, game);
             await Task.Delay(-1);
         }
     }
