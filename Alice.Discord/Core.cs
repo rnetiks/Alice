@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Alice.Discord.Modules;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -36,11 +36,43 @@ namespace Alice.Discord
         private async Task RegisterCommandAsync()
         {
             _client.MessageReceived += OnMessageReceived;
+            _client.ReactionAdded += OnReactionAdded;
+            _client.ReactionRemoved += OnReactionAdded;
+            _client.Log += message =>
+            {
+                Console.WriteLine(message.Message);
+                return Task.CompletedTask;
+            };
 
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
         }
+        
+        private async Task OnHentaiSwitchPage(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reactions) {
+            var f = Modules.BotUtility.InteractiveMessages;
+            foreach (var t in f.Where(t => t.RequestAuthor == reactions.UserId && t.Id == message.Id)) {
+                t.CurrentPage = t.CurrentPage+=1;
+                if (t.CurrentPage <= t.ImageCount)
+                {
+                    var c1 = _client.GetChannel(channel.Id);
+                    var c = (c1 as IMessageChannel);
+                    var m = c.GetMessageAsync(message.Id);
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithImageUrl(($"{t.Path}/{t.CurrentPage}.jpg"));
+                    await ((IUserMessage) m.Result).ModifyAsync(msg => msg.Embed = eb.Build());
+                }
 
-        public static bool Contains(string i, IEnumerable<string> c) => c.All(i.Contains);
+                if (t.CurrentPage > t.ImageCount)
+                    await t.MessageLink.DeleteAsync();
+            }
+        }
+        
+        private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        {
+            if (_client.GetUser(arg3.UserId).IsBot)
+                return;
+            
+            await OnHentaiSwitchPage(arg1, arg2, arg3);
+        }
 
         private async Task OnMessageReceived(SocketMessage arg)
         {
@@ -49,10 +81,10 @@ namespace Alice.Discord
                 return;
             }
 
-            Console.WriteLine($"{message.Author.Username}: {message.Content}");
             int argPos = 0;
             if (message.HasStringPrefix("a!", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
+                Console.WriteLine(message.Content);
                 var context = new SocketCommandContext(_client, message);
 
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
