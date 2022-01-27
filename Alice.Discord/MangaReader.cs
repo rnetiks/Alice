@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Alice.DataFetcher;
 using Discord;
 using Discord.WebSocket;
+using JetBrains.Annotations;
 
 namespace Alice.Discord
 {
@@ -31,7 +32,7 @@ namespace Alice.Discord
         public MangaReader(DiscordSocketClient bot, MangaInfo manga, params ulong[] users)
         {
             if (users.Length == 0)
-                throw new ArgumentException("Please specify atleast one user", nameof(users));
+                throw new ArgumentException("Please specify at least one user", nameof(users));
             
             _bot = bot;
             _manga = manga;
@@ -40,10 +41,9 @@ namespace Alice.Discord
 
         private static EmbedBuilder FromMangaInfo(MangaInfo manga)
         {
-            var embed = new EmbedBuilder();
+            var embed = new EmbedBuilder {Title = manga.Title};
 
-            embed.Title = manga.Title;
-            
+
             if (manga.Artists.Length >= 1)
                 embed.Author = new EmbedAuthorBuilder().WithName(manga.Artists[0]);
 
@@ -79,7 +79,8 @@ namespace Alice.Discord
             return embed;
         }
 
-        public async Task Create(ISocketMessageChannel channel, string mangaWebsite)
+        [UsedImplicitly]
+        public async Task Create(ISocketMessageChannel channel)
         {
             var embed = FromMangaInfo(_manga);
             if (_manga.Cover != null)

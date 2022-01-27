@@ -5,6 +5,7 @@ using System.Net;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Alice.DataFetcher.MangaSources
 {
